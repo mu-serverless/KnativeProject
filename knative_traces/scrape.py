@@ -1,0 +1,40 @@
+import pandas as pd
+
+
+df_invocations = pd.read_csv("invocations_per_function_md.anon.d01.csv")
+df_invocations = df_invocations[df_invocations["Trigger"] == "http"]
+df_invocations.reset_index(inplace=True)
+df_invocations = df_invocations[["HashApp"]+[str(i) for i in range(1, 1441)]]
+
+
+df_memory = pd.read_csv("app_memory_percentiles.anon.d01.csv")[["HashApp","AverageAllocatedMb"]]
+df_memory.set_index("HashApp",inplace=True)
+
+df_duration = pd.read_csv("function_durations_percentiles.anon.d01.csv")[["HashApp","Average"]]
+df_duration.set_index("HashApp",inplace=True)
+
+df_output = pd.DataFrame(columns=["HashApp", "Memory", "Duration"] + [str(i) for i in range(1, 1441)])
+for index, row in df_invocations.iterrows():
+  try:
+    df_output = df_output.append({
+     "HashApp": row["HashApp"],
+     "Memory": df_memory.loc[row["HashApp"], "AverageAllocatedMb"],
+     "Duration": df_duration.loc[row["HashApp"], "Average"].mean(),
+     **row[[str(i) for i in range(1,1441)]].to_dict()
+    }, ignore_index=True)
+  except:
+    print("Missing: " + row["HashApp"])
+  if df_output.shape[0] == 100:
+    break
+
+tmp = df_output["Duration"].values
+x_std = [(x-tmp.min())/(tmp.max()-tmp.min()) for x in tmp]
+x_scaled = [int(round(x*(100-1)+1)) for x in x_std]
+df_output["Duration"] = x_scaled
+
+df_output.to_csv("traces.csv", index=False)
+
+
+
+
+
