@@ -1,6 +1,5 @@
 #!/usr/bin/env  python3
 
-from matplotlib import pyplot as plt
 import sys
 import os
 import json
@@ -15,14 +14,16 @@ def get_autoscaler_name():
 def get_env_vars():
     HOST_KEY = os.getenv("INGRESS_HOST")
     if not HOST_KEY:
-        sys.stderr.write(
-            "export HOST_KEY => export INGRESS_HOST=$(kubectl get po -l istio=ingressgateway -n istio-system -o jsonpath='{.items[0].status.hostIP}')")
+        # sys.stderr.write(
+        # "export HOST_KEY => export INGRESS_HOST=$(kubectl get po -l istio=ingressgateway -n istio-system -o jsonpath='{.items[0].status.hostIP}')")
+        HOST_KEY = os.popen(
+            "kubectl get po -l istio=ingressgateway -n istio-system -o jsonpath='{.items[0].status.hostIP}'").read()
 
     PORT_KEY = os.getenv("INGRESS_PORT")
 
     if not PORT_KEY:
-        sys.stderr.write(
-            "export PORT_KEY => INGRESS_PORT=$(kubectl -n istio-system get service istio-ingressgateway -o jsonpath='{.spec.ports[?(@.name==\"http2\")].nodePort}')")
+        PORT_KEY = os.popen(
+            "kubectl -n istio-system get service istio-ingressgateway -o jsonpath='{.spec.ports[?(@.name==\"http2\")].nodePort}'").read()
 
     return (HOST_KEY, PORT_KEY)
 
@@ -79,6 +80,7 @@ def run(duration=30):
 
 
 def graph_99_percentile(lc_file, wfq_file):
+    from matplotlib import pyplot as plt
     wfq = {}
     with open(wfq_file, 'r') as w:
         wfq = json.load(w)
