@@ -20,7 +20,7 @@ def get_env_vars():
 
     PORT_KEY = os.getenv("INGRESS_PORT")
 
-    if PORT_KEY is None:
+    if not PORT_KEY:
         sys.stderr.write(
             "export PORT_KEY => INGRESS_PORT=$(kubectl -n istio-system get service istio-ingressgateway -o jsonpath='{.spec.ports[?(@.name==\"http2\")].nodePort}')")
 
