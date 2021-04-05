@@ -16,7 +16,7 @@ def get_env_vars():
     HOST_KEY = os.getenv("INGRESS_HOST")
     if not HOST_KEY:
         sys.stderr.write(
-            "export HOST_KEY=> export INGRESS_HOST=$(kubectl get po -l istio=ingressgateway -n istio-system -o jsonpath='{.items[0].status.hostIP}')")
+            "export HOST_KEY => export INGRESS_HOST=$(kubectl get po -l istio=ingressgateway -n istio-system -o jsonpath='{.items[0].status.hostIP}')")
 
     PORT_KEY = os.getenv("INGRESS_PORT")
 
