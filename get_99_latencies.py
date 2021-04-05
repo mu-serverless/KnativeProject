@@ -36,7 +36,8 @@ def get_timestamp():
 
 def run(duration=30):
     timestamp = get_timestamp()
-    for algo in ["lc", "wfq"]:
+    algos = ["lc", "wfq"]
+    for algo in algos:
         if algo == "lc":
             prefix = "lc"
             header = "least-conn-autoscale-go"
@@ -62,8 +63,9 @@ def run(duration=30):
                 if line.find("INFO   99%") > -1:
                     ls = line.split()
                     res[k] = int(ls[ls.index("99%") + 1])
-            # ensure all tcp connections from loadtest have closed down
-            time.sleep(60)
+            if algo != algos[-1] and k != keys[-1]:
+                # ensure all tcp connections from loadtest have closed down
+                time.sleep(60)
 
         j = json.dumps(res)
         with open(logfile, 'w') as l:
